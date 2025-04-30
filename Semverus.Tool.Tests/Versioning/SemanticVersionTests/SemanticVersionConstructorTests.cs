@@ -1,8 +1,8 @@
 ﻿using Semverus.Tool.Versioning;
 
-namespace Semverus.Tool.Tests.Versioning;
+namespace Semverus.Tool.Tests.Versioning.SemanticVersionTests;
 
-public class SemanticVersionTests
+public class SemanticVersionConstructorTests
 {
 	[Fact]
 	public void SemanticVersion_Major_VersionCorrect()
