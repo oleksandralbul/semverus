@@ -1,10 +1,14 @@
-﻿using System.Runtime.CompilerServices;
+﻿using System.Diagnostics.CodeAnalysis;
+using System.Runtime.CompilerServices;
+using System.Text;
 
 namespace Semverus.Tool.Versioning;
 
-public class SemanticVersion : IComparable, IComparable<SemanticVersion>
+public class SemanticVersion : ICloneable, IComparable, IComparable<SemanticVersion>, IEquatable<SemanticVersion>, IParsable<SemanticVersion>
 {
 	private const char DOT = '.';
+	private const char DASH = '-';
+	private const char PLUS = '+';
 
 	protected readonly string[] prereleaseIdentifiers = [];
 	protected readonly string[] metadataIdentifiers = [];
@@ -43,6 +47,17 @@ public class SemanticVersion : IComparable, IComparable<SemanticVersion>
 		}
 	}
 
+	public override string ToString()
+		=> $"{Major}.{Minor}.{Patch}";
+
+	#region " ICloneable implementation "
+
+	object ICloneable.Clone() => Clone();
+
+	public SemanticVersion Clone() => new(Major, Minor, Patch, Prerelease, Metadata);
+
+	#endregion " ICloneable implementation "
+
 	#region " IComparable implementation "
 
 	public int CompareTo(object? obj)
@@ -71,6 +86,152 @@ public class SemanticVersion : IComparable, IComparable<SemanticVersion>
 
 	#endregion " IComparable implementation "
 
+	#region " IEquatable implementation "
+
+	public bool Equals(SemanticVersion? other)
+		=> other != null && (ReferenceEquals(this, other) || CompareTo(other) == 0);
+
+	public override bool Equals(object? obj)
+		=> obj is SemanticVersion version && Equals(version);
+
+	public override int GetHashCode()
+		=> HashCode.Combine(Major, Minor, Patch, Prerelease, Metadata);
+
+	#endregion " IEquatable implementation "
+
+	#region " IParsable implementation "
+
+	public static SemanticVersion Parse(string s) => Parse(s, null);
+
+	public static SemanticVersion Parse(string s, IFormatProvider? provider)
+	{
+		ArgumentNullException.ThrowIfNull(s);
+		var index = ReadVersionNumber(s, 0, out var major);
+		index = ReadVersionNumber(s, index, out var minor);
+		index = ReadVersionNumber(s, index, out var patch, true);
+		index = ReadPrerelease(s, index, out var prerelease);
+		ReadMetadata(s, index, out var metadata);
+		return new(major, minor, patch, prerelease, metadata);
+	}
+
+	public static bool TryParse([NotNullWhen(true)] string? s, [MaybeNullWhen(false)] out SemanticVersion? result)
+		=> TryParse(s, null, out result);
+
+	public static bool TryParse([NotNullWhen(true)] string? s, IFormatProvider? provider, [MaybeNullWhen(false)] out SemanticVersion result)
+	{
+		result = null;
+		try
+		{
+			result = Parse(s!, provider);
+			return true;
+		}
+		catch
+		{
+			return false;
+		}
+	}
+
+	#endregion " IParsable implementation "
+
+	#region " Arithmetic operators implementation"
+
+	public static bool operator ==(SemanticVersion? left, SemanticVersion? right)
+		=> EqualityComparer<SemanticVersion>.Default.Equals(left, right);
+
+	public static bool operator !=(SemanticVersion? left, SemanticVersion? right)
+		=> !(left == right);
+
+	#endregion " Arithmetic operators implementation"
+
+	#region "Private methods and helpers "
+
+	private static int ReadVersionNumber(string s, int index, out int number, bool isLastNumber = false)
+	{
+		if (index == s.Length) ThrowFormatException(s);
+		var builder = new StringBuilder();
+		while (index < s.Length)
+		{
+			var c = s[index];
+			if (!char.IsDigit(c))
+			{
+				if (c == DASH || c == PLUS)
+				{
+					if (isLastNumber) break;
+					ThrowFormatException(s);
+				}
+				if (c == DOT)
+				{
+					index++;
+					break;
+				}
+			}
+			builder.Append(c);
+			index++;
+		}
+		number = int.Parse(builder.ToString());
+		return index;
+	}
+
+	private static int ReadPrerelease(string s, int index, out string? prerelease)
+	{
+		if (index == s.Length || s[index] == PLUS)
+		{
+			prerelease = null;
+			return index;
+		}
+		index++;
+		var builder = new StringBuilder();
+		while (index < s.Length)
+		{
+			var c = s[index];
+
+			if (IsNotSemVerCharacter(c))
+			{
+				if (c == PLUS)
+				{
+					break;
+				}
+				ThrowFormatException(s);
+			}
+			builder.Append(c);
+			index++;
+		}
+
+		prerelease = builder.ToString();
+		if (prerelease.Length == 0) ThrowFormatException(s);
+		return index;
+	}
+
+	private static void ReadMetadata(string s, int index, out string? metadata)
+	{
+		if (index == s.Length)
+		{
+			metadata = null;
+			return;
+		}
+		if (s[index] != PLUS) ThrowFormatException(s);
+		index++;
+		var builder = new StringBuilder();
+		while (index < s.Length)
+		{
+			var c = s[index];
+
+			if (IsNotSemVerCharacter(c)) ThrowFormatException(s);
+			builder.Append(c);
+			index++;
+		}
+
+		metadata = builder.ToString();
+		if (metadata.Length == 0) ThrowFormatException(s);
+	}
+
+	private static bool IsNotSemVerCharacter(char c)
+		=> !(char.IsLetterOrDigit(c) || c == DASH || c == DOT);
+
+	private static void ThrowFormatException(string input)
+		=> throw new FormatException($"Input string {input} was not in correct format");
+
+	#endregion "Private methods and helpers "
 }
 
 public class IdentifierNotValidException : Exception
