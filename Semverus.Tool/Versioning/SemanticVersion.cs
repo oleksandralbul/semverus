@@ -3,11 +3,14 @@ using System.Text;
 
 namespace Semverus.Tool.Versioning;
 
-public class SemanticVersion : ICloneable, IComparable, IComparable<SemanticVersion>, IEquatable<SemanticVersion>, IParsable<SemanticVersion>
+public class SemanticVersion : ICloneable, IComparable, IComparable<SemanticVersion>, IEquatable<SemanticVersion>, IFormattable, IParsable<SemanticVersion>
 {
 	private const char DOT = '.';
 	private const char DASH = '-';
 	private const char PLUS = '+';
+
+	private const string NORMALIZED_FORMAT = "N";
+	private const string FULL_FORMAT = "F";
 
 	protected readonly Identifier[] prereleaseIdentifiers = [];
 	protected readonly Identifier[] metadataIdentifiers = [];
@@ -37,9 +40,6 @@ public class SemanticVersion : ICloneable, IComparable, IComparable<SemanticVers
 		if (!string.IsNullOrEmpty(metadata))
 			metadataIdentifiers = GetIdentifiers(metadata);
 	}
-
-	public override string ToString()
-		=> $"{Major}.{Minor}.{Patch}";
 
 	#region " ICloneable implementation "
 
@@ -90,6 +90,25 @@ public class SemanticVersion : ICloneable, IComparable, IComparable<SemanticVers
 
 	#endregion " IEquatable implementation "
 
+	#region " IFormattable implementation and ToString() override "
+
+	public string ToString(string? format, IFormatProvider? formatProvider)
+	{
+		format ??= NORMALIZED_FORMAT;
+		var formatter = TryGetFormatter(formatProvider, out var versionFormatter)
+			? versionFormatter : SemanticVersionFormatter.Instance;
+
+		return formatter.Format(format, this, formatProvider);
+	}
+
+	public override string ToString() => ToNormalizedString();
+
+	public virtual string ToNormalizedString() => ToString(NORMALIZED_FORMAT, null);
+
+	public virtual string ToFullString() => ToString(FULL_FORMAT, null);
+
+	#endregion " IFormattable implementation and ToString() override "
+
 	#region " IParsable implementation "
 
 	public static SemanticVersion Parse(string s) => Parse(s, null);
@@ -132,16 +151,16 @@ public class SemanticVersion : ICloneable, IComparable, IComparable<SemanticVers
 	public static bool operator !=(SemanticVersion? left, SemanticVersion? right)
 		=> !(left == right);
 
-	public static bool operator <(SemanticVersion? left, SemanticVersion? right) 
+	public static bool operator <(SemanticVersion? left, SemanticVersion? right)
 		=> left is null ? right is not null : left.CompareTo(right) < 0;
 
-	public static bool operator <=(SemanticVersion? left, SemanticVersion? right) 
+	public static bool operator <=(SemanticVersion? left, SemanticVersion? right)
 		=> left is null || left.CompareTo(right) <= 0;
 
-	public static bool operator >(SemanticVersion? left, SemanticVersion? right) 
+	public static bool operator >(SemanticVersion? left, SemanticVersion? right)
 		=> left is not null && left.CompareTo(right) > 0;
 
-	public static bool operator >=(SemanticVersion? left, SemanticVersion? right) 
+	public static bool operator >=(SemanticVersion? left, SemanticVersion? right)
 		=> left is null ? right is null : left.CompareTo(right) >= 0;
 
 	#endregion " Arithmetic operators implementation"
@@ -236,6 +255,12 @@ public class SemanticVersion : ICloneable, IComparable, IComparable<SemanticVers
 
 	private static void ThrowFormatException(string input)
 		=> throw new FormatException($"Input string {input} was not in correct format");
+
+	private bool TryGetFormatter(IFormatProvider? formatProvider, [NotNullWhen(true)] out ICustomFormatter? formatter)
+	{
+		formatter = (formatProvider == null || formatProvider.GetFormat(GetType()) is not ICustomFormatter cf) ? null : cf;
+		return formatter != null;
+	}
 
 	#endregion "Private methods and helpers "
 }

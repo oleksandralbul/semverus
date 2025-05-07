@@ -226,6 +226,78 @@ public class SemanticVersionTests
 
 	#endregion " IComparable tests "
 
+	#region " IFormattable and ToString() methods tests "
+
+	[Theory]
+	[InlineData("1.2.3", "1.2.3")]
+	[InlineData("1.2.3+metadata", "1.2.3")]
+	[InlineData("1.2.3-alpha.1", "1.2.3-alpha.1")]
+	[InlineData("1.2.3-alpha.1+metadata", "1.2.3-alpha.1")]
+	public void ToString_ShouldReturnNormalizedString(string version, string expected)
+		=> Assert.Equal(SemanticVersion.Parse(version).ToString(), expected);
+
+	[Theory]
+	[InlineData("1.2.3", "1.2.3")]
+	[InlineData("1.2.3+metadata", "1.2.3")]
+	[InlineData("1.2.3-alpha.1", "1.2.3-alpha.1")]
+	[InlineData("1.2.3-alpha.1+metadata", "1.2.3-alpha.1")]
+	public void ToNormalizedString_ShouldReturnNormalizedString(string version, string expected)
+		=> Assert.Equal(SemanticVersion.Parse(version).ToNormalizedString(), expected);
+
+	[Theory]
+	[InlineData("1.2.3")]
+	[InlineData("1.2.3+metadata")]
+	[InlineData("1.2.3-alpha.1")]
+	[InlineData("1.2.3-alpha.1+metadata")]
+	public void ToFullString_ShouldReturnFullVersion(string version)
+		=> Assert.Equal(SemanticVersion.Parse(version).ToFullString(), version);
+
+	[Theory]
+	[InlineData("1.2.3", "N", "1.2.3")]
+	[InlineData("1.2.3+metadata", "N", "1.2.3")]
+	[InlineData("1.2.3-alpha.1", "N", "1.2.3-alpha.1")]
+	[InlineData("1.2.3-alpha.1+metadata", "N", "1.2.3-alpha.1")]
+	[InlineData("1.2.3", "F", "1.2.3")]
+	[InlineData("1.2.3+metadata", "F", "1.2.3+metadata")]
+	[InlineData("1.2.3-alpha.1", "F", "1.2.3-alpha.1")]
+	[InlineData("1.2.3-alpha.1+metadata", "F", "1.2.3-alpha.1+metadata")]
+	[InlineData("1.2.3", "V", "1.2.3")]
+	[InlineData("1.2.3+metadata", "V", "1.2.3")]
+	[InlineData("1.2.3-alpha.1", "V", "1.2.3")]
+	[InlineData("1.2.3-alpha.1+metadata", "V", "1.2.3")]
+	[InlineData("1.2.3", "R", "")]
+	[InlineData("1.2.3+metadata", "R", "")]
+	[InlineData("1.2.3-alpha.1", "R", "alpha.1")]
+	[InlineData("1.2.3-alpha.1+metadata", "R", "alpha.1")]
+	[InlineData("1.2.3", "M", "")]
+	[InlineData("1.2.3+metadata", "M", "metadata")]
+	[InlineData("1.2.3-alpha.1", "M", "")]
+	[InlineData("1.2.3-alpha.1+metadata", "M", "metadata")]
+	[InlineData("1.2.3", "x", "1")]
+	[InlineData("1.2.3+metadata", "x", "1")]
+	[InlineData("1.2.3-alpha.1", "x", "1")]
+	[InlineData("1.2.3-alpha.1+metadata", "x", "1")]
+	[InlineData("1.2.3", "y", "2")]
+	[InlineData("1.2.3+metadata", "y", "2")]
+	[InlineData("1.2.3-alpha.1", "y", "2")]
+	[InlineData("1.2.3-alpha.1+metadata", "y", "2")]
+	[InlineData("1.2.3", "z", "3")]
+	[InlineData("1.2.3+metadata", "z", "3")]
+	[InlineData("1.2.3-alpha.1", "z", "3")]
+	[InlineData("1.2.3-alpha.1+metadata", "z", "3")]
+	[InlineData("1.2.3-alpha.1+metadata", "x.y.z-R+M", "1.2.3-alpha.1+metadata")]
+	[InlineData("1.2.3", "x.y", "1.2")]
+	[InlineData("1.2.3", "x.y.z", "1.2.3")]
+	[InlineData("1.2.3", "xyz", "123")]
+	[InlineData("1.2.3", "test", "test")]
+	[InlineData("1.2.3", "x.y.z (test)", "1.2.3 (test)")]
+	[InlineData("1.2.3", "vx.y.z", "v1.2.3")]
+	[InlineData("1.2.3-alpha.5+metadata", "vx.y.zVFN", "v1.2.31.2.31.2.3-alpha.5+metadata1.2.3-alpha.5")]
+	public void ToString_UsingProvider_ShouldReturnCorrectOutput(string version, string format, string expected)
+		=> Assert.Equal(expected, SemanticVersion.Parse(version).ToString(format, null));
+
+	#endregion " IFormattable and ToString() methods tests "
+
 	#region " IEquatable tests "
 
 	[Fact]
@@ -382,7 +454,7 @@ public class SemanticVersionTests
 	}
 
 	[Theory]
-	[InlineData(null,"1.0.0")]
+	[InlineData(null, "1.0.0")]
 	[InlineData("1.0.0", "1.0.1")]
 	[InlineData("1.0.0", "1.1.0")]
 	[InlineData("1.1.0-alpha", "1.1.0")]
@@ -397,7 +469,7 @@ public class SemanticVersionTests
 	}
 
 	[Theory]
-	[InlineData("1.0.0",null )]
+	[InlineData("1.0.0", null)]
 	[InlineData("1.0.1", "1.0.0")]
 	[InlineData("1.1.0", "1.0.0")]
 	[InlineData("1.1.0", "1.1.0-alpha")]
