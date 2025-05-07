@@ -81,7 +81,7 @@ public class SemanticVersionTests
 	[InlineData(".")]
 	public void SemanticVersion_IncorrectPrereleaseLabel_Throws(string expectedPrerelease)
 	{
-		Assert.Throws<IdentifierNotValidException>(() => new SemanticVersion(1, 2, 3, expectedPrerelease));
+		Assert.Throws<ArgumentException>(() => new SemanticVersion(1, 2, 3, expectedPrerelease));
 	}
 
 	[Theory]
@@ -105,7 +105,7 @@ public class SemanticVersionTests
 	[InlineData(".")]
 	public void SemanticVersion_IncorrectMetadataLabel_Throws(string expectedMetadata)
 	{
-		Assert.Throws<IdentifierNotValidException>(() => new SemanticVersion(1, 2, 3, metadata: expectedMetadata));
+		Assert.Throws<ArgumentException>(() => new SemanticVersion(1, 2, 3, metadata: expectedMetadata));
 	}
 
 	#endregion " Constructors tests"
@@ -329,6 +329,89 @@ public class SemanticVersionTests
 		=> Assert.Throws<FormatException>(() => SemanticVersion.Parse(input));
 
 	#endregion " IParsable tests "
+
+	#region " Arithmetic operators tests "
+
+	[Fact]
+	public void EqualOperator_TwoNullsAreEqual()
+	{
+		SemanticVersion? left = null, right = null;
+		Assert.True(left == right);
+	}
+
+	[Fact]
+	public void EqualOperator_SameReference_ShouldBeEqual()
+	{
+		var left = new SemanticVersion(1, 2, 3);
+		var right = left;
+
+		Assert.Equal(left, right);
+	}
+
+	[Theory]
+	[InlineData("1.2.3", "1.2.3")]
+	[InlineData("1.2.3-alpha", "1.2.3-alpha")]
+	[InlineData("1.2.3-alpha.1", "1.2.3-alpha.1")]
+	[InlineData("1.2.3-alpha.beta", "1.2.3-alpha.beta")]
+	[InlineData("1.2.3-123", "1.2.3-123")]
+	[InlineData("1.2.3--a1", "1.2.3--a1")]
+	[InlineData("1.2.3-alpha+build.42", "1.2.3-alpha+build.84")]
+	public void EqualOperator_ValuesShouldBeEqual(string left, string right)
+	{
+		var leftSemver = SemanticVersion.Parse(left);
+		var rightSemver = SemanticVersion.Parse(right);
+
+		Assert.True(leftSemver == rightSemver);
+	}
+
+	[Theory]
+	[InlineData("1.2.3", null)]
+	[InlineData(null, "1.2.3")]
+	[InlineData("1.0.0", "2.0.0")]
+	[InlineData("1.0.0", "1.1.0")]
+	[InlineData("1.0.0", "1.0.1")]
+	[InlineData("1.0.0-alpha", "1.0.1")]
+	[InlineData("1.0.0-alpha.1", "1.0.1-alpha")]
+	[InlineData("1.0.0-123", "1.0.1-124")]
+	public void NotEqualOperator_ValuesShouldNotBeEqual(string? left, string? right)
+	{
+		var leftSemver = left is null ? null : SemanticVersion.Parse(left);
+		var rightSemver = right is null ? null : SemanticVersion.Parse(right);
+
+		Assert.True(leftSemver != rightSemver);
+	}
+
+	[Theory]
+	[InlineData(null,"1.0.0")]
+	[InlineData("1.0.0", "1.0.1")]
+	[InlineData("1.0.0", "1.1.0")]
+	[InlineData("1.1.0-alpha", "1.1.0")]
+	[InlineData("1.1.0-alpha", "1.1.0-beta")]
+	[InlineData("1.1.0-alpha.1", "1.1.0-alpha.2")]
+	public void LessOperator_LeftValueShouldBeLessThanRight(string? left, string right)
+	{
+		var leftSemver = left is null ? null : SemanticVersion.Parse(left);
+		var rightSemver = SemanticVersion.Parse(right);
+
+		Assert.True(leftSemver < rightSemver);
+	}
+
+	[Theory]
+	[InlineData("1.0.0",null )]
+	[InlineData("1.0.1", "1.0.0")]
+	[InlineData("1.1.0", "1.0.0")]
+	[InlineData("1.1.0", "1.1.0-alpha")]
+	[InlineData("1.1.0-beta", "1.1.0-alpha")]
+	[InlineData("1.1.0-alpha.2", "1.1.0-alpha.1")]
+	public void GreaterOperator_LeftValueShouldBeGreaterThanRight(string left, string? right)
+	{
+		var leftSemver = SemanticVersion.Parse(left);
+		var rightSemver = right is null ? null : SemanticVersion.Parse(right);
+
+		Assert.True(leftSemver > rightSemver);
+	}
+
+	#endregion " Arithmetic operators tests "
 }
 
 internal static class SemanticVersionTestExtensions

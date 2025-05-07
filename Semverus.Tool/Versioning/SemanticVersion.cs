@@ -1,5 +1,4 @@
 ﻿using System.Diagnostics.CodeAnalysis;
-using System.Runtime.CompilerServices;
 using System.Text;
 
 namespace Semverus.Tool.Versioning;
@@ -10,8 +9,8 @@ public class SemanticVersion : ICloneable, IComparable, IComparable<SemanticVers
 	private const char DASH = '-';
 	private const char PLUS = '+';
 
-	protected readonly string[] prereleaseIdentifiers = [];
-	protected readonly string[] metadataIdentifiers = [];
+	protected readonly Identifier[] prereleaseIdentifiers = [];
+	protected readonly Identifier[] metadataIdentifiers = [];
 
 	public int Major { get; }
 	public int Minor { get; }
@@ -33,18 +32,10 @@ public class SemanticVersion : ICloneable, IComparable, IComparable<SemanticVers
 		Patch = patch;
 
 		if (!string.IsNullOrEmpty(prerelease))
-		{
-			prereleaseIdentifiers = prerelease.Split(DOT);
-			foreach (string identifier in prereleaseIdentifiers)
-				IdentifierNotValidException.ThrowIfNotValid(identifier, prerelease);
-		}
+			prereleaseIdentifiers = GetIdentifiers(prerelease);
 
 		if (!string.IsNullOrEmpty(metadata))
-		{
-			metadataIdentifiers = metadata.Split(DOT);
-			foreach (string identifier in metadataIdentifiers)
-				IdentifierNotValidException.ThrowIfNotValid(identifier, metadata);
-		}
+			metadataIdentifiers = GetIdentifiers(metadata);
 	}
 
 	public override string ToString()
@@ -141,6 +132,18 @@ public class SemanticVersion : ICloneable, IComparable, IComparable<SemanticVers
 	public static bool operator !=(SemanticVersion? left, SemanticVersion? right)
 		=> !(left == right);
 
+	public static bool operator <(SemanticVersion? left, SemanticVersion? right) 
+		=> left is null ? right is not null : left.CompareTo(right) < 0;
+
+	public static bool operator <=(SemanticVersion? left, SemanticVersion? right) 
+		=> left is null || left.CompareTo(right) <= 0;
+
+	public static bool operator >(SemanticVersion? left, SemanticVersion? right) 
+		=> left is not null && left.CompareTo(right) > 0;
+
+	public static bool operator >=(SemanticVersion? left, SemanticVersion? right) 
+		=> left is null ? right is null : left.CompareTo(right) >= 0;
+
 	#endregion " Arithmetic operators implementation"
 
 	#region "Private methods and helpers "
@@ -225,6 +228,9 @@ public class SemanticVersion : ICloneable, IComparable, IComparable<SemanticVers
 		if (metadata.Length == 0) ThrowFormatException(s);
 	}
 
+	private static Identifier[] GetIdentifiers(string value)
+		=> [.. value.Split(DOT).Select(p => new Identifier(p))];
+
 	private static bool IsNotSemVerCharacter(char c)
 		=> !(char.IsLetterOrDigit(c) || c == DASH || c == DOT);
 
@@ -232,19 +238,4 @@ public class SemanticVersion : ICloneable, IComparable, IComparable<SemanticVers
 		=> throw new FormatException($"Input string {input} was not in correct format");
 
 	#endregion "Private methods and helpers "
-}
-
-public class IdentifierNotValidException : Exception
-{
-	private IdentifierNotValidException(string identifier, string identifierString, string label)
-		: base($"An identifier \"{identifier}\" in a {label} label ({identifierString}) is not a valid SemVer 2.0 identifier.") { }
-
-	public static void ThrowIfNotValid(string identifier, string identifiersString, [CallerArgumentExpression(nameof(identifiersString))] string? label = null)
-	{
-		if (identifier.Length == 0 || identifier.Any(IsNotSemVerCharacter))
-			throw new IdentifierNotValidException(identifier, identifiersString, label!);
-	}
-
-	private static bool IsNotSemVerCharacter(char c)
-		=> !(char.IsLetterOrDigit(c) || c == '-');
 }
