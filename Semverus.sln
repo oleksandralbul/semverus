@@ -5,6 +5,12 @@ VisualStudioVersion = 17.14.36017.23
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Semverus.Tool", "Semverus.Tool\Semverus.Tool.csproj", "{726ABCD7-733A-49E6-8B3E-D00C275DC22D}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{02EA681E-C7D8-13C7-8484-4AC65E1B71E8}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Semverus.Core", "Semverus.Core\Semverus.Core.csproj", "{B7A48E94-F57E-4B9B-80EB-70BDBBCE1178}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Semverus.Core.Tests", "Semverus.Core.Tests\Semverus.Core.Tests.csproj", "{0D0BE857-B1AF-4EBC-A18B-9C79EFE237F6}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -15,9 +21,20 @@ Global
 		{726ABCD7-733A-49E6-8B3E-D00C275DC22D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{726ABCD7-733A-49E6-8B3E-D00C275DC22D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{726ABCD7-733A-49E6-8B3E-D00C275DC22D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B7A48E94-F57E-4B9B-80EB-70BDBBCE1178}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B7A48E94-F57E-4B9B-80EB-70BDBBCE1178}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B7A48E94-F57E-4B9B-80EB-70BDBBCE1178}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B7A48E94-F57E-4B9B-80EB-70BDBBCE1178}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0D0BE857-B1AF-4EBC-A18B-9C79EFE237F6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0D0BE857-B1AF-4EBC-A18B-9C79EFE237F6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0D0BE857-B1AF-4EBC-A18B-9C79EFE237F6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0D0BE857-B1AF-4EBC-A18B-9C79EFE237F6}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{0D0BE857-B1AF-4EBC-A18B-9C79EFE237F6} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {14C91071-A4E5-4AF4-B8A8-C0A640F3C74A}
