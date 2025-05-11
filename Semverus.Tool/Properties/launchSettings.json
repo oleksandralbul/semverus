@@ -1,0 +1,11 @@
+{
+  "profiles": {
+    "Semverus.Tool": {
+      "commandName": "Project"
+    },
+    "Run with args": {
+      "commandName": "Project",
+      "commandLineArgs": "--help"
+    }
+  }
+}
