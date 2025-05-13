@@ -13,4 +13,12 @@
 		<PackAsTool>true</PackAsTool>
 		<ToolCommandName>svr</ToolCommandName>
 	</PropertyGroup>
+	<ItemGroup>
+	  <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="9.0.4" />
+	  <PackageReference Include="System.CommandLine" Version="2.0.0-beta5.25260.104" />
+	  <PackageReference Include="YamlDotNet" Version="16.3.0" />
+	</ItemGroup>
+	<ItemGroup>
+	  <ProjectReference Include="..\Semverus.Core\Semverus.Core.csproj" />
+	</ItemGroup>
 </Project>
