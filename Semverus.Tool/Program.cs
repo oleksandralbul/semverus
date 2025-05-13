@@ -1,4 +1,7 @@
-﻿using System.CommandLine;
+﻿using Microsoft.Extensions.DependencyInjection;
+using Semverus.Tool.Options;
+using Semverus.Tool.Services;
+using System.CommandLine;
 using System.Reflection;
 
 namespace Semverus.Tool;
@@ -12,8 +15,23 @@ internal class Program
 			.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?
 			.InformationalVersion;
 
-		var rootCommand = new RootCommand($"Semverus v{version}");
+		using var provider = BuildServiceProvider();
 
-		return await rootCommand.InvokeAsync(args);
+		var rootCommand = new RootCommand($"Semverus v{version}")
+		{
+			provider.GetRequiredService<ShowConfigOption>()
+		};
+
+		return await rootCommand.Parse(args).InvokeAsync();
 	}
+
+	private static ServiceProvider BuildServiceProvider()
+		=> ConfigureServices().BuildServiceProvider();
+
+	private static IServiceCollection ConfigureServices()
+		=> new ServiceCollection()
+			.AddTransient<ShowConfigOption>()
+			.AddTransient<ShowConfigOptionAction>()
+			.AddSingleton<ISemverusConfigurationService, SemverusConfigurationService>()
+			;
 }
