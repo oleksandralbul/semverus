@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
+using Semverus.Core;
 using Semverus.Tool.Options;
 using Semverus.Tool.Services;
 using System.CommandLine;
@@ -30,6 +31,7 @@ internal class Program
 
 	private static IServiceCollection ConfigureServices()
 		=> new ServiceCollection()
+			.AddCoreServices()
 			.AddTransient<ShowConfigOption>()
 			.AddTransient<ShowConfigOptionAction>()
 			.AddSingleton<ISemverusConfigurationService, SemverusConfigurationService>()
